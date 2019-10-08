@@ -10,4 +10,6 @@
     <string name="question_false">False</string>
     <string name="btn_next">NEXT</string>
     <string name="btn_prev">PREV</string>
+    <string name="correct_toast">Correct!</string>
+    <string name="incorrect_toast">WRONG!</string>
 </resources>

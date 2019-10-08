@@ -3,9 +3,11 @@ package com.freshappbooks.geoquiz;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,22 +33,55 @@ public class MainActivity extends AppCompatActivity {
 
         buttonTrue = findViewById(R.id.btn_true);
         buttonFalse = findViewById(R.id.btn_false);
+        buttonNext = findViewById(R.id.btn_next);
+        buttonPrev = findViewById(R.id.btn_prev);
         questionTextView = findViewById(R.id.question_tv);
-        int question = questionBook[currentIndex].getTextResId();
-        questionTextView.setText(question);
+
+        updateQuestion();
 
         buttonTrue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                checkAnswer(true);
             }
         });
 
         buttonFalse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                checkAnswer(false);
+            }
+        });
+
+        buttonNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                currentIndex = (currentIndex + 1) % questionBook.length;
+                updateQuestion();
 
             }
         });
+        buttonPrev.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+    }
+
+    private void updateQuestion() {
+        int question = questionBook[currentIndex].getTextResId();
+        questionTextView.setText(question);
+    }
+
+    private void checkAnswer(boolean userPassedTrue) {
+        boolean answerIsTrue = questionBook[currentIndex].isAnswerTrue();
+        int messageResId;
+        if (userPassedTrue == answerIsTrue) {
+            messageResId = R.string.correct_toast;
+        } else {
+            messageResId = R.string.incorrect_toast;
+        }
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
     }
 }
