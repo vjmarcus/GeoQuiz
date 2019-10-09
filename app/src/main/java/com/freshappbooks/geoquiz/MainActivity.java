@@ -3,6 +3,7 @@ package com.freshappbooks.geoquiz;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -10,6 +11,8 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,7 +31,10 @@ public class MainActivity extends AppCompatActivity {
       new Question(R.string.question_asia, true),
     };
 
+    public static final String TAG = "MyApp";
     private static final String KEY_INDEX = "index";
+    private float countRightAnswer = 0;
+    private int countAnswer = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 checkAnswer(true);
+                setButtonDisable();
             }
         });
 
@@ -65,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 checkAnswer(false);
+                setButtonDisable();
             }
         });
 
@@ -73,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 currentIndex = (currentIndex + 1) % questionBook.length;
                 updateQuestion();
-
+                setButtonEnable();
             }
         });
         buttonPrev.setOnClickListener(new View.OnClickListener() {
@@ -82,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 if (currentIndex > 0) {
                     currentIndex = (currentIndex - 1) % questionBook.length;
                     updateQuestion();
-
+                    setButtonEnable();
                 }
             }
         });
@@ -95,13 +103,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkAnswer(boolean userPassedTrue) {
         boolean answerIsTrue = questionBook[currentIndex].isAnswerTrue();
+        countAnswer++;
         int messageResId;
         if (userPassedTrue == answerIsTrue) {
             messageResId = R.string.correct_toast;
+            countRightAnswer++;
+
         } else {
             messageResId = R.string.incorrect_toast;
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+        countRightAnswer();
     }
 
     @Override
@@ -115,5 +127,21 @@ public class MainActivity extends AppCompatActivity {
         if (outState != null) {
             outState.putInt(KEY_INDEX, currentIndex);
         }
+    }
+
+    private void setButtonDisable() {
+        buttonTrue.setEnabled(false);
+        buttonFalse.setEnabled(false);
+    }
+    private void setButtonEnable() {
+        buttonTrue.setEnabled(true);
+        buttonFalse.setEnabled(true);
+    }
+
+    private void countRightAnswer() {
+        if (countAnswer == 6) {
+            Toast.makeText(this, "Right answer is = " + countAnswer * 100 / countRightAnswer + "%", Toast.LENGTH_SHORT).show();
+        }
+
     }
 }
