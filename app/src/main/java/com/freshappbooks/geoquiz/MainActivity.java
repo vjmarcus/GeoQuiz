@@ -1,11 +1,13 @@
 package com.freshappbooks.geoquiz;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,8 +15,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Button buttonTrue;
     private Button buttonFalse;
-    private Button buttonPrev;
-    private Button buttonNext;
+    private ImageButton buttonPrev;
+    private ImageButton buttonNext;
     private TextView questionTextView;
     private int currentIndex = 0;
     private Question [] questionBook = new Question[] {
@@ -26,8 +28,13 @@ public class MainActivity extends AppCompatActivity {
       new Question(R.string.question_asia, true),
     };
 
+    private static final String KEY_INDEX = "index";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (savedInstanceState != null){
+            currentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -95,5 +102,18 @@ public class MainActivity extends AppCompatActivity {
             messageResId = R.string.incorrect_toast;
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (outState != null) {
+            outState.putInt(KEY_INDEX, currentIndex);
+        }
     }
 }
