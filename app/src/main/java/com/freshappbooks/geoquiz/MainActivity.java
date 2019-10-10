@@ -3,6 +3,7 @@ package com.freshappbooks.geoquiz;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE_CHEAT = 0;
     private Button buttonTrue;
     private Button buttonFalse;
     private Button buttonCheat;
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton buttonNext;
     private TextView questionTextView;
     private int currentIndex = 0;
+    private boolean isCheater;
     private Question [] questionBook = new Question[] {
       new Question(R.string.question_australia, true),
       new Question(R.string.question_oceans, true),
@@ -66,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         buttonTrue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkAnswer(true);
+                checkAnswer(true, isCheater);
                 setButtonDisable();
             }
         });
@@ -74,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         buttonFalse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkAnswer(false);
+                checkAnswer(false, isCheater);
                 setButtonDisable();
             }
         });
@@ -82,9 +85,11 @@ public class MainActivity extends AppCompatActivity {
         buttonNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentIndex = (currentIndex + 1) % questionBook.length;
-                updateQuestion();
-                setButtonEnable();
+                if (currentIndex < questionBook.length - 1) {
+                    currentIndex = (currentIndex + 1) % questionBook.length;
+                    updateQuestion();
+                    setButtonEnable();
+                }
             }
         });
         buttonPrev.setOnClickListener(new View.OnClickListener() {
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 boolean answerIsTrue = questionBook[currentIndex].isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(MainActivity.this, answerIsTrue);
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_CODE_CHEAT);
             }
         });
     }
@@ -110,21 +115,30 @@ public class MainActivity extends AppCompatActivity {
     private void updateQuestion() {
         int question = questionBook[currentIndex].getTextResId();
         questionTextView.setText(question);
+        isCheater = false;
     }
 
-    private void checkAnswer(boolean userPassedTrue) {
+    private void checkAnswer(boolean userPassedTrue, boolean isCheater) {
+        Log.v(TAG, "start checkAnswer");
         boolean answerIsTrue = questionBook[currentIndex].isAnswerTrue();
         countAnswer++;
-        int messageResId;
-        if (userPassedTrue == answerIsTrue) {
-            messageResId = R.string.correct_toast;
-            countRightAnswer++;
-
+        int messageResId = 0;
+        if (isCheater) {
+            messageResId = R.string.judgment_toast;
         } else {
-            messageResId = R.string.incorrect_toast;
+            if (userPassedTrue == answerIsTrue) {
+                messageResId = R.string.correct_toast;
+                countRightAnswer++;
+
+            } else {
+                messageResId = R.string.incorrect_toast;
+            }
+            Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+            countRightAnswer();
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
         countRightAnswer();
+
     }
 
     @Override
@@ -154,5 +168,19 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Right answer is = " + countAnswer * 100 / countRightAnswer + "%", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        } if (requestCode == REQUEST_CODE_CHEAT) {
+            if (data == null) {
+                return;
+            }
+            isCheater = CheatActivity.wasAnswerShown(data);
+            Log.v(TAG, "isCheater = " + isCheater);
+        }
     }
 }
