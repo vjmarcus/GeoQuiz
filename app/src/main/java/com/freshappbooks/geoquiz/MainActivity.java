@@ -3,6 +3,7 @@ package com.freshappbooks.geoquiz;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Button buttonTrue;
     private Button buttonFalse;
+    private Button buttonCheat;
     private ImageButton buttonPrev;
     private ImageButton buttonNext;
     private TextView questionTextView;
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         buttonFalse = findViewById(R.id.btn_false);
         buttonNext = findViewById(R.id.btn_next);
         buttonPrev = findViewById(R.id.btn_prev);
+        buttonCheat = findViewById(R.id.cheat_button);
         questionTextView = findViewById(R.id.question_tv);
 
         updateQuestion();
@@ -92,6 +95,14 @@ public class MainActivity extends AppCompatActivity {
                     updateQuestion();
                     setButtonEnable();
                 }
+            }
+        });
+        buttonCheat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean answerIsTrue = questionBook[currentIndex].isAnswerTrue();
+                Intent intent = CheatActivity.newIntent(MainActivity.this, answerIsTrue);
+                startActivity(intent);
             }
         });
     }
